@@ -7,7 +7,7 @@ The central function of **stl_reader** is `ReadStlFile(...)`. It automatically r
 The function operates on template container types. Those containers should have a similar interface as `std::vector` and operate on `float` or `double` types (`TNumberContainer`) or on `int` or `size_t` types (`TIndexContainer`).
 
 ## Documentation
-Please have a look at [**stl_reader.h file documentation**](https://raw.githubusercontent.com/sreiter/stl_reader/master/docs/html/stl__reader_8h.html) for a detailed documentation of the provided functions.
+Please have a look at the [**stl_reader.h file documentation**](http://sreiter.github.io/stl_reader/stl__reader_8h.html) for a detailed documentation of the provided functions.
 
 ## Usage
 
