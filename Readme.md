@@ -35,7 +35,7 @@ catch (std::exception& e) {
 }
 ```
 
-If you do not want to use exceptions, you may remove those by altering two macros. Please see stl_reader.h for more information.
+If you do not want to use exceptions, you may remove those by altering two macros. Please see [**stl_reader.h file documentation**](http://sreiter.github.io/stl_reader/stl__reader_8h.html) for more information.
 
 ## License
 **stl_reader** is licensed under a *2-clause BSD* license:
