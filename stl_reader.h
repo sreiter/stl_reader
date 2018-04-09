@@ -300,10 +300,11 @@ bool ReadStlFile_ASCII(const char* filename,
 
 	while(!(in.eof() || in.fail()))
 	{
-	//	read the line and tokenize
+	//	read the line and tokenize.
+	//	In order to reuse memory in between lines, 'tokens' won't be cleared.
+	//	Instead we count the number of tokens using 'tokenCount'.
 		getline(in, buffer);
 
-		tokens.resize(maxNumTokens);
 		istringstream line(buffer);
 		int tokenCount = 0;
 		while(!(line.eof() || line.fail())){
@@ -315,13 +316,11 @@ bool ReadStlFile_ASCII(const char* filename,
 			++tokenCount;
 		}
 
-		tokens.resize(tokenCount);
-
-		if(!tokens.empty())
+		if(tokenCount > 0)
 		{
 			string& tok = tokens[0];
 			if(tok.compare("vertex") == 0){
-				if(tokens.size() < 4){
+				if(tokenCount < 4){
 					READ_STL_THROW("ERROR while reading from " << filename <<
 						": vertex not specified correctly in line " << lineCount);
 				}
@@ -336,7 +335,7 @@ bool ReadStlFile_ASCII(const char* filename,
 			}
 			else if(tok.compare("facet") == 0)
 			{
-				READ_STL_COND_THROW(tokens.size() < 5,
+				READ_STL_COND_THROW(tokenCount < 5,
 						"ERROR while reading from " << filename <<
 						": triangle not specified correctly in line " << lineCount);
 				
@@ -351,7 +350,7 @@ bool ReadStlFile_ASCII(const char* filename,
 				numFaceVrts = 0;
 			}
 			else if(tok.compare("outer") == 0){
-				READ_STL_COND_THROW ((tokens.size() < 2) || (tokens[1].compare("loop") != 0),
+				READ_STL_COND_THROW ((tokenCount < 2) || (tokens[1].compare("loop") != 0),
 				    "ERROR while reading from " << filename <<
 					": expecting outer loop in line " << lineCount);
 			}
