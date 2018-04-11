@@ -37,27 +37,28 @@
  *
  * Usage example:
  * \code
- *		std::vector<float> coords, normals;
- *		std::vector<unsigned int> tris, solids;
+ *	std::vector<float> coords, normals;
+ *	std::vector<unsigned int> tris, solids;
+ *
+ *	try {
+ *		ReadStlFile ("geometry.stl", coords, normals, tris, solids);
+ *		const size_t numTris = tris.size() / 3;
+ *		for(size_t itri = 0; itri < numTris; ++itri) {
+ *			std::cout << "coordinates of triangle " << itri << ": ";
+ *			for(size_t icorner = 0; icorner < 3; ++icorner) {
+ *				float* c = &coords[3 * tris [3 * itri + icorner]];
+ *		  		std::cout << "(" << c[0] << ", " << c[1] << ", " << c[2] << ") ";
+ *		  	}
+ *		 	std::cout << std::endl;
  *		
- *		try {
- *			ReadStlFile ("geometry.stl", coords, normals, tris, solids);
- *			const size_t numTris = tris.size() / 3;
- *			for(size_t itri = 0; itri < numTris; ++itri) {
- *				std::cout << "coordinates of triangle " << itri << ": ";
- *				for(size_t j = 0; j < 3; ++j)
- *			  		cout << coords [tris [3 * itri + j]] << " ";
- *			 	cout << std::endl;
- *			
- *				std::cout << "normal of triangle " << itri << ": ";
- *				for(size_t j = 0; j < 3; ++j)
- *			  		cout << normals [3 * itri + j] << " ";
- *			 	cout << std::endl;
- *			}
+ *		  	float* n = &normals [3 * itri];
+ *			std::cout	<< "normal of triangle " << itri << ": "
+ *		  				<< "(" << n[0] << ", " << n[1] << ", " << n[2] << ")\n";
  *		}
- *		catch (std::exception& e) {
- *			std::cout << e.what() << std::endl;
- *		}
+ *	}
+ *	catch (std::exception& e) {
+ *		std::cout << e.what() << std::endl;
+ *	}
  * \endcode
  *
  * If you do not want to use exceptions, you may replace the macros 
@@ -112,6 +113,8 @@
  *					On termination, it has size numFaces * 3. Each triple of
  *					entries defines a triangle. The type TIndexContainer should
  *					have the same interface as std::vector<size_t>.
+ *					Multiply corner indices from trisOut by 3 to obtain the index
+ *					of the first coordinate of that corner in coordsOut.
  *
  * \param solidRangesOut	[out] On termination, it holds the ranges of triangle indices
  *							for each solid. It has the size numSolids + 1. Each entry
@@ -402,13 +405,13 @@ bool ReadStlFile_BINARY(const char* filename,
 	in.read(stl_header, 80);
 	READ_STL_COND_THROW(!in, "Error while parsing binary stl header in file " << filename);
 
-	uint32 numTris = 0;
+	unsigned int numTris = 0;
 	in.read((char*)&numTris, 4);
 	READ_STL_COND_THROW(!in, "Couldnt determine number of triangles in binary stl file " << filename);
 
 	vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
-	for(uint32 tri = 0; tri < numTris; ++tri){
+	for(unsigned int tri = 0; tri < numTris; ++tri){
 		float d[12];
 		in.read((char*)d, 12 * 4);
 		READ_STL_COND_THROW(!in, "Error while parsing trianlge in binary stl file " << filename);
