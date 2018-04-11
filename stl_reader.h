@@ -182,19 +182,19 @@ namespace stl_reader_impl {
 
 		bool operator == (const CoordWithIndex& c) const
 		{
-			return c[0] == data[0] && c[1] == data[1] && c[2] == data[2];
+			return (c[0] == data[0]) && (c[1] == data[1]) && (c[2] == data[2]);
 		}
 
 		bool operator != (const CoordWithIndex& c) const
 		{
-			return c[0] != data[0] || c[1] != data[1] || c[2] != data[2];
+			return (c[0] != data[0]) || (c[1] != data[1]) || (c[2] != data[2]);
 		}
 
 		bool operator < (const CoordWithIndex& c) const
 		{
-			return		data[0] < c[0]
-					||	data[0] == c[0] && data[1] < c[1]
-					||	data[0] == c[0] && data[1] == c[1] && data[2] < c[2];
+			return		(data[0] < c[0])
+					||	(data[0] == c[0] && data[1] < c[1])
+					||	(data[0] == c[0] && data[1] == c[1] && data[2] < c[2]);
 		}
 
 		inline number_t& operator [] (const size_t i)		{return data[i];}
@@ -289,12 +289,11 @@ bool ReadStlFile_ASCII(const char* filename,
 	ifstream in(filename);
 	READ_STL_COND_THROW(!in, "Couldnt open file " << filename);
 
-	vector<CoordWithIndex <number_t, index_t>> coordsWithIndex;
+	vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
 	string buffer;
 	vector<string> tokens;
 	int lineCount = 1;
-	int solidIndex = -1;
 	int maxNumTokens = 0;
 	size_t numFaceVrts = 0;
 
@@ -407,7 +406,7 @@ bool ReadStlFile_BINARY(const char* filename,
 	in.read((char*)&numTris, 4);
 	READ_STL_COND_THROW(!in, "Couldnt determine number of triangles in binary stl file " << filename);
 
-	vector<CoordWithIndex <number_t, index_t>> coordsWithIndex;
+	vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
 	for(uint32 tri = 0; tri < numTris; ++tri){
 		float d[12];
