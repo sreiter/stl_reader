@@ -205,7 +205,7 @@ namespace stl_reader_impl {
 	};
 
 	// sorts the array coordsWithIndexInOut and copies unique indices to coordsOut.
-	// Triangle-corners are re-indexed on the fly
+	// Triangle-corners are re-indexed on the fly and degenerated triangles are removed.
 	template <class TNumberContainer, class TIndexContainer>
 	void RemoveDoubles (TNumberContainer& uniqueCoordsOut,
 	                    TIndexContainer& trisInOut,
@@ -250,9 +250,22 @@ namespace stl_reader_impl {
 		}
 
 	//	re-index triangles, so that they refer to 'uniqueCoordsOut'
-		for(size_t i = 0; i < trisInOut.size(); ++i){
-			trisInOut[i] = newIndex[trisInOut[i]];
+	//	make sure to only add triangles which refer to three different indices
+		size_t numUniqueTriInds = 0;
+		for(size_t i = 0; i < trisInOut.size(); i+=3){
+			int ni[3];
+			for(int j = 0; j < 3; ++j)
+				ni[j] = newIndex[trisInOut[i+j]];
+
+			if((ni[0] != ni[1]) && (ni[0] != ni[2]) && (ni[1] != ni[2])){
+				for(int j = 0; j < 3; ++j)
+					trisInOut[numUniqueTriInds + j] = ni[j];
+				numUniqueTriInds += 3;
+			}
 		}
+
+		if(numUniqueTriInds < trisInOut.size())
+			trisInOut.resize (numUniqueTriInds);
 	}
 }// end of namespace stl_reader_impl
 
