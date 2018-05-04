@@ -29,19 +29,75 @@
  * The central function of this file is `ReadStlFile(...)`. It automatically recognizes
  * whether an *ASCII* or a *Binary* file is to be read. It identifies matching corner
  * coordinates of triangles with each other, so that the resulting coordinate
- * array does not contain the same coordinate triple multiple times.
+ * array does not contain the same coordinate-triple multiple times.
  *
  * The function operates on template container types. Those containers should
  * have similar interfaces as `std::vector` and operate on `float` or `double` types
  * (`TNumberContainer`) or on `int` or `size_t` types (`TIndexContainer`).
  *
- * Usage example:
+ *
+ * A conveniance class `StlMesh` is also provided, which makes accessing triangle
+ * corners and corresponding corner coordinates much more easy. It still provides
+ * raw access to the underlying data arrays.
+ *
+ *
+ * ### Usage example 1 (using `StlMesh`):
+ *
+ * \code
+ *	try {
+ *		stl_reader::StlMesh <float, unsigned int> mesh ("geometry.stl");
+ *
+ *		for(size_t itri = 0; itri < mesh.num_tris(); ++itri) {
+ *			std::cout << "coordinates of triangle " << itri << ": ";
+ *			for(size_t icorner = 0; icorner < 3; ++icorner) {
+ *				float* c = mesh.vrt_coords (mesh.tri_corner_ind (itri, icorner));
+ *		  		std::cout << "(" << c[0] << ", " << c[1] << ", " << c[2] << ") ";
+ *		  	}
+ *		 	std::cout << std::endl;
+ *		
+ *		  	float* n = mesh.tri_normal (itri);
+ *			std::cout	<< "normal of triangle " << itri << ": "
+ *		  				<< "(" << n[0] << ", " << n[1] << ", " << n[2] << ")\n";
+ *		}
+ *	}
+ *	catch (std::exception& e) {
+ *		std::cout << e.what() << std::endl;
+ *	}
+ * \endcode
+ *
+ *
+ * ### Usage example 2 (using `StlMesh` and *solids*)
+ *
+ * \code
+ *	try {
+ *		stl_reader::StlMesh <float, unsigned int> mesh ("geometry.stl");
+ *
+ *		for(size_t isolid = 0; isolid < mesh.num_solids(); ++isolid) {
+ *			std::cout << "solid " << isolid << std::endl;
+ *
+ *			for(size_t itri = mesh.solid_tris_begin(isolid);
+ *			    itri < mesh.solid_tris_end(isolid); ++itri)
+ *			{
+ *			  	const float* n = mesh.tri_normal (itri);
+ *				std::cout	<< "normal of triangle " << itri << ": "
+ *			  				<< "(" << n[0] << ", " << n[1] << ", " << n[2] << ")\n";
+ *			}
+ *		}
+ *	}
+ *	catch (std::exception& e) {
+ *		std::cout << e.what() << std::endl;
+ *	}
+ * \endcode
+ *
+ *
+ * ### Usage example 3 (using raw data arrays)
+ *
  * \code
  *	std::vector<float> coords, normals;
  *	std::vector<unsigned int> tris, solids;
  *
  *	try {
- *		ReadStlFile ("geometry.stl", coords, normals, tris, solids);
+ *		stl_reader::ReadStlFile ("geometry.stl", coords, normals, tris, solids);
  *		const size_t numTris = tris.size() / 3;
  *		for(size_t itri = 0; itri < numTris; ++itri) {
  *			std::cout << "coordinates of triangle " << itri << ": ";
@@ -61,14 +117,13 @@
  *	}
  * \endcode
  *
- * If you do not want to use exceptions, you may replace the macros 
- * `READ_STL_THROW` and `READ_STL_COND_THROW` in this file by alternate
- * versions. Using, e.g., `return false;` instead of `throw(...)`, one may
- * check for errors by checking the return value of `ReadStlFile`.
+ * If you do not want to use exceptions, you may define the macro
+ * STL_READER_NO_EXCEPTIONS before including 'stl_reader.h'. In that case,
+ * functions will return `false` if an error occurred.
  */
 
-#ifndef __H__LOAD_STL_FILE__
-#define __H__LOAD_STL_FILE__
+#ifndef __H__STL_READER
+#define __H__STL_READER
 
 #include <algorithm>
 #include <exception>
@@ -76,17 +131,19 @@
 #include <sstream>
 #include <vector>
 
+#ifdef STL_READER_NO_EXCEPTIONS
+	#define STL_READER_THROW(msg) return false;
+	#define STL_READER_COND_THROW(cond, msg) if(cond) return false;
+#else
+	///	Throws an std::runtime_error with the given message.
+	#define STL_READER_THROW(msg)	{std::stringstream ss; ss << msg; throw(std::runtime_error(ss.str()));}
 
-///	Throws an std::runtime_error with the given message.
-/** If you want to avoid exceptions, you may alter this to simply return false.*/
-#define READ_STL_THROW(msg)	{std::stringstream ss; ss << msg; throw(std::runtime_error(ss.str()));}
-// #define READ_STL_THROW(msg) return false;
+	/// Throws an std::runtime_error with the given message, if the given condition evaluates to true.
+	#define STL_READER_COND_THROW(cond, msg)	if(cond){std::stringstream ss; ss << msg; throw(std::runtime_error(ss.str()));}
+#endif
 
-/// Throws an std::runtime_error with the given message, if the given condition evaluates to true.
-/** If you want to avoid exceptions, you may alter this to simply return false if the condition is met.*/
-#define READ_STL_COND_THROW(cond, msg)	if(cond){std::stringstream ss; ss << msg; throw(std::runtime_error(ss.str()));}
-// #define READ_STL_COND_THROW(cond, msg) if(cond) return false;
 
+namespace stl_reader {
 
 /// Reads an ASCII or binary stl file into several arrays
 /** Reads a stl file and writes its coordinates, normals and triangle-corner-indices
@@ -165,8 +222,171 @@ bool ReadStlFile_BINARY(const char* filename,
  * with the keyword solid. This should work for many stl files, but may
  * fail, of course.
  */
-inline bool STLFileHasASCIIFormat(const char* filename);
+inline bool StlFileHasASCIIFormat(const char* filename);
 
+
+///	convenience mesh class which makes accessing the stl data more easy
+template <class TNumber = float, class TIndex = unsigned int>
+class StlMesh {
+public:
+	/// initializes an empty mesh
+	StlMesh ()
+	{
+		solids.resize (2, 0);
+	}
+
+	/// initializes the mesh from the stl-file specified through filename
+	StlMesh (const char* filename)
+	{
+		read_file (filename);
+	}
+
+	/// fills the mesh with the contents of the specified stl-file
+	bool read_file (const char* filename)
+	{
+		bool res = false;
+
+		#ifndef STL_READER_NO_EXCEPTIONS
+		try {
+		#endif
+
+			res = ReadStlFile (filename, coords, normals, tris, solids);
+
+		#ifndef STL_READER_NO_EXCEPTIONS
+		} catch (std::exception& e) {
+		#else
+		if (!res) {
+		#endif
+
+			coords.clear ();
+			normals.clear ();
+			tris.clear ();
+			solids.clear ();
+			STL_READER_THROW (e.what());
+		}
+
+		return res;
+	}
+
+	///	returns the number of vertices in the mesh
+	size_t num_vrts () const
+	{
+		return coords.size() / 3;
+	}
+
+	/// returns an array of 3 floating point values, one for each coordinate of the vertex
+	const TNumber* vrt_coords (const size_t vi) const
+	{
+		return &coords[vi * 3];
+	}
+
+	///	returns the number of triangles in the mesh
+	size_t num_tris () const
+	{
+		return tris.size() / 3;
+	}
+
+	///	returns an array of 3 indices, one for each corner vertex of the triangle
+	const TIndex* tri_corner_inds (const size_t ti) const
+	{
+		return &tris [ti * 3];
+	}
+
+	/// returns the index of the corner with index `0<=ci<3` of triangle ti
+	const TIndex tri_corner_ind (const size_t ti, const size_t ci) const
+	{
+		return tris [ti * 3 + ci];
+	}
+
+	/** \brief	returns an array of 3 floating point values, one for each
+	 *			coordinate of the specified corner of the specified tri.
+	 * \note 	same result as calling on a `StlMesh mesh`:
+	 *			\code
+	 *				mesh.vrt_coords (mesh.tri_corner_ind (itri, icorner))
+	 *			\endcode
+	 */
+	const TNumber* tri_corner_coords (const size_t ti, const size_t ci) const
+	{
+		return &coords[tri_corner_ind(ti, ci) * 3];
+	}
+
+	/// returns an array of 3 floating point values defining the normal of a tri
+	const TNumber* tri_normal (const size_t ti) const
+	{
+		return &normals [ti * 3];
+	}
+
+	/// returns the number of solids of the mesh
+	/** solids can be seen as a partitioning of the triangles of a mesh.
+	 * By iterating consecutively from the index of the first triangle of a
+	 * solid `si` (using `solid_tris_begin(si)`) to the index of the last
+	 * triangle of a solid (using `solid_tris_end(...)-1`), one visits all
+	 * triangles of the solid `si`.*/
+	size_t num_solids () const
+	{
+		if(solids.empty ())
+			return 0;
+		return solids.size () - 1;
+	}
+
+	/// returns the index of the first triangle in the given solid
+	TIndex solid_tris_begin (const size_t si) const
+	{
+		return solids [si];
+	}
+
+	/// returns the index of the triangle behind the last triangle in the given solid
+	TIndex solid_tris_end (const size_t si) const
+	{
+		return solids [si + 1];
+	}
+
+	/// returns a pointer to the coordinate array, containing `num_vrts()*3` entries.
+	/** Storage layout: `x0,y0,z0,x1,y1,z1,...`
+	 * \returns	pointer to a contiguous array of numbers, or `NULL` if no coords exist.*/
+	const TNumber* raw_coords () const
+	{
+		if(coords.empty())
+			return NULL;
+		return &coords[0];
+	}
+
+	/// returns a pointer to the normal array, containing `num_tris()*3` entries.
+	/** Storage layout: `nx0,ny0,nz0,nx1,ny1,nz1,...`
+	 * \returns	pointer to a contiguous array of numbers, or `NULL` if no normals exist.*/
+	const TNumber* raw_normals () const
+	{
+		if(normals.empty())
+			return NULL;
+		return &normals[0];
+	}
+
+	/// returns a pointer to the triangle array, containing `num_tris()*3` entries.
+	/** Storage layout: `t0c0,t0c1,t0c2,t1c0,t1c1,t1c2,...`
+	 * \returns	pointer to a contiguous array of indices, or `NULL` if no tris exist.*/
+	const TIndex* raw_tris () const
+	{
+		if(tris.empty())
+			return NULL;
+		return &tris[0];
+	}
+
+	/// returns a pointer to the solids array, containing `num_solids()+1` entries.
+	/** Storage layout: `s0begin, s0end/s1begin, s1end/s2begin, ..., sNend`
+	 * \returns	pointer to a contiguous array of indices, or `NULL` if no solids exist.*/
+	const TIndex* raw_solids () const
+	{
+		if(solids.empty())
+			return NULL;
+		return &solids[0];
+	}
+
+private:
+	std::vector<TNumber>	coords;
+	std::vector<TNumber>	normals;
+	std::vector<TIndex>		tris;
+	std::vector<TIndex>		solids;
+};
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -277,7 +497,7 @@ bool ReadStlFile(const char* filename,
                 TIndexContainer& trisOut,
 				TIndexContainer& solidRangesOut)
 {
-	if(STLFileHasASCIIFormat(filename))
+	if(StlFileHasASCIIFormat(filename))
 		return ReadStlFile_ASCII(filename, coordsOut, normalsOut, trisOut, solidRangesOut);
 	else
 		return ReadStlFile_BINARY(filename, coordsOut, normalsOut, trisOut, solidRangesOut);
@@ -303,7 +523,7 @@ bool ReadStlFile_ASCII(const char* filename,
 	solidRangesOut.clear();
 
 	ifstream in(filename);
-	READ_STL_COND_THROW(!in, "Couldnt open file " << filename);
+	STL_READER_COND_THROW(!in, "Couldn't open file " << filename);
 
 	vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
@@ -336,7 +556,7 @@ bool ReadStlFile_ASCII(const char* filename,
 			string& tok = tokens[0];
 			if(tok.compare("vertex") == 0){
 				if(tokenCount < 4){
-					READ_STL_THROW("ERROR while reading from " << filename <<
+					STL_READER_THROW("ERROR while reading from " << filename <<
 						": vertex not specified correctly in line " << lineCount);
 				}
 				
@@ -350,11 +570,11 @@ bool ReadStlFile_ASCII(const char* filename,
 			}
 			else if(tok.compare("facet") == 0)
 			{
-				READ_STL_COND_THROW(tokenCount < 5,
+				STL_READER_COND_THROW(tokenCount < 5,
 						"ERROR while reading from " << filename <<
 						": triangle not specified correctly in line " << lineCount);
 				
-				READ_STL_COND_THROW(tokens[1].compare("normal") != 0,
+				STL_READER_COND_THROW(tokens[1].compare("normal") != 0,
 						"ERROR while reading from " << filename <<
 						": Missing normal specifier in line " << lineCount);
 				
@@ -365,12 +585,12 @@ bool ReadStlFile_ASCII(const char* filename,
 				numFaceVrts = 0;
 			}
 			else if(tok.compare("outer") == 0){
-				READ_STL_COND_THROW ((tokenCount < 2) || (tokens[1].compare("loop") != 0),
+				STL_READER_COND_THROW ((tokenCount < 2) || (tokens[1].compare("loop") != 0),
 				    "ERROR while reading from " << filename <<
 					": expecting outer loop in line " << lineCount);
 			}
 			else if(tok.compare("endfacet") == 0){
-				READ_STL_COND_THROW(numFaceVrts != 3,
+				STL_READER_COND_THROW(numFaceVrts != 3,
 					"ERROR while reading from " << filename <<
 					": bad number of vertices specified for face in line " << lineCount);
 
@@ -412,22 +632,22 @@ bool ReadStlFile_BINARY(const char* filename,
 	solidRangesOut.clear();
 
 	ifstream in(filename, ios::binary);
-	READ_STL_COND_THROW(!in, "Couldnt open file " << filename);
+	STL_READER_COND_THROW(!in, "Couldnt open file " << filename);
 
 	char stl_header[80];
 	in.read(stl_header, 80);
-	READ_STL_COND_THROW(!in, "Error while parsing binary stl header in file " << filename);
+	STL_READER_COND_THROW(!in, "Error while parsing binary stl header in file " << filename);
 
 	unsigned int numTris = 0;
 	in.read((char*)&numTris, 4);
-	READ_STL_COND_THROW(!in, "Couldnt determine number of triangles in binary stl file " << filename);
+	STL_READER_COND_THROW(!in, "Couldnt determine number of triangles in binary stl file " << filename);
 
 	vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
 	for(unsigned int tri = 0; tri < numTris; ++tri){
 		float d[12];
 		in.read((char*)d, 12 * 4);
-		READ_STL_COND_THROW(!in, "Error while parsing trianlge in binary stl file " << filename);
+		STL_READER_COND_THROW(!in, "Error while parsing trianlge in binary stl file " << filename);
 
 		for(int i = 0; i < 3; ++i)
 			normalsOut.push_back (d[i]);
@@ -446,7 +666,7 @@ bool ReadStlFile_BINARY(const char* filename,
 
 		char addData[2];
 		in.read(addData, 2);
-		READ_STL_COND_THROW(!in, "Error while parsing additional triangle data in binary stl file " << filename);
+		STL_READER_COND_THROW(!in, "Error while parsing additional triangle data in binary stl file " << filename);
 	}
 
 	solidRangesOut.push_back(0);
@@ -458,11 +678,11 @@ bool ReadStlFile_BINARY(const char* filename,
 }
 
 
-inline bool STLFileHasASCIIFormat(const char* filename)
+inline bool StlFileHasASCIIFormat(const char* filename)
 {
 	using namespace std;
 	ifstream in(filename);
-	READ_STL_COND_THROW(!in, "Couldnt open file " << filename);
+	STL_READER_COND_THROW(!in, "Couldnt open file " << filename);
 
 	string firstWord;
 	in >> firstWord;
@@ -471,5 +691,6 @@ inline bool STLFileHasASCIIFormat(const char* filename)
 	return firstWord.compare("solid") == 0;
 }
 
+} // end of namespace stl_reader
 
-#endif	//__H__LOAD_STL_FILE__
+#endif	//__H__STL_READER
