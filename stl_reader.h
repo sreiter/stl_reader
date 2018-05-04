@@ -238,12 +238,20 @@ public:
 	}
 
 	/// initializes the mesh from the stl-file specified through filename
+	/** \{ */
 	StlMesh (const char* filename)
 	{
 		read_file (filename);
 	}
 
+	StlMesh (const std::string& filename)
+	{
+		read_file (filename);
+	}
+	/** \} */
+
 	/// fills the mesh with the contents of the specified stl-file
+	/** \{ */
 	bool read_file (const char* filename)
 	{
 		bool res = false;
@@ -269,6 +277,12 @@ public:
 
 		return res;
 	}
+
+	bool read_file (const std::string& filename)
+	{
+		return read_file (filename.c_str());
+	}
+	/** \} */
 
 	///	returns the number of vertices in the mesh
 	size_t num_vrts () const
