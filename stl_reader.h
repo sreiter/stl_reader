@@ -458,7 +458,7 @@ namespace stl_reader_impl {
 		sort (coordsWithIndexInOut.begin(), coordsWithIndexInOut.end());
 	
 	//	first count unique indices
-		size_t numUnique = 1;
+		index_t numUnique = 1;
 		for(size_t i = 1; i < coordsWithIndexInOut.size(); ++i){
 			if(coordsWithIndexInOut[i] != coordsWithIndexInOut[i - 1])
 				++numUnique;
@@ -469,16 +469,16 @@ namespace stl_reader_impl {
 
 	//	copy unique coordinates to 'uniqueCoordsOut' and create an index-map
 	//	'newIndex', which allows to re-index triangles later on.
-		size_t curInd = 0;
+		index_t curInd = 0;
 		newIndex[0] = 0;
-		for(size_t i = 0; i < 3; ++i)
+		for(index_t i = 0; i < 3; ++i)
 			uniqueCoordsOut[i] = coordsWithIndexInOut[0][i];
 
 		for(size_t i = 1; i < coordsWithIndexInOut.size(); ++i){
 			const CoordWithIndex <number_t, index_t> c = coordsWithIndexInOut[i];
 			if(c != coordsWithIndexInOut[i - 1]){
 				++curInd;
-				for(size_t j = 0; j < 3; ++j)
+				for(index_t j = 0; j < 3; ++j)
 					uniqueCoordsOut[curInd * 3 + j] = coordsWithIndexInOut[i][j];
 			}
 
@@ -487,8 +487,8 @@ namespace stl_reader_impl {
 
 	//	re-index triangles, so that they refer to 'uniqueCoordsOut'
 	//	make sure to only add triangles which refer to three different indices
-		size_t numUniqueTriInds = 0;
-		for(size_t i = 0; i < trisInOut.size(); i+=3){
+		index_t numUniqueTriInds = 0;
+		for(index_t i = 0; i < trisInOut.size(); i+=3){
 			int ni[3];
 			for(int j = 0; j < 3; ++j)
 				ni[j] = newIndex[trisInOut[i+j]];
