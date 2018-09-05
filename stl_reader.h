@@ -188,36 +188,39 @@ namespace stl_reader {
  *
  * \returns		true if the file was successfully read into the provided container.
  */
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile(const char* filename,
-                TNumberContainer& coordsOut,
-                TNumberContainer& normalsOut,
-                TIndexContainer& trisOut,
-				TIndexContainer& solidRangesOut);
+                TNumberContainer1& coordsOut,
+                TNumberContainer2& normalsOut,
+                TIndexContainer1& trisOut,
+				TIndexContainer2& solidRangesOut);
 
 
 /// Reads an ASCII stl file into several arrays
 /** \copydetails ReadStlFile
  * \sa ReadStlFile, ReadStlFile_ASCII
  */
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile_ASCII(const char* filename,
-                       TNumberContainer& coordsOut,
-                       TNumberContainer& normalsOut,
-                       TIndexContainer& trisOut,
-					   TIndexContainer& solidRangesOut);
+                       TNumberContainer1& coordsOut,
+                       TNumberContainer2& normalsOut,
+                       TIndexContainer1& trisOut,
+					   TIndexContainer2& solidRangesOut);
 
 /// Reads a binary stl file into several arrays
 /** \copydetails ReadStlFile
  * \todo	support systems with big endianess
  * \sa 		ReadStlFile, ReadStlFile_BINARY
  */
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile_BINARY(const char* filename,
-                        TNumberContainer& coordsOut,
-                        TNumberContainer& normalsOut,
-                        TIndexContainer& trisOut,
-					    TIndexContainer& solidRangesOut);
+                        TNumberContainer1& coordsOut,
+                        TNumberContainer2& normalsOut,
+                        TIndexContainer1& trisOut,
+					    TIndexContainer2& solidRangesOut);
 
 /// Determines whether a stl file has ASCII format
 /** The underlying mechanism is simply checks whether the provided file starts
@@ -506,12 +509,13 @@ namespace stl_reader_impl {
 }// end of namespace stl_reader_impl
 
 
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile(const char* filename,
-                TNumberContainer& coordsOut,
-                TNumberContainer& normalsOut,
-                TIndexContainer& trisOut,
-				TIndexContainer& solidRangesOut)
+                TNumberContainer1& coordsOut,
+                TNumberContainer2& normalsOut,
+                TIndexContainer1& trisOut,
+				TIndexContainer2& solidRangesOut)
 {
 	if(StlFileHasASCIIFormat(filename))
 		return ReadStlFile_ASCII(filename, coordsOut, normalsOut, trisOut, solidRangesOut);
@@ -520,18 +524,19 @@ bool ReadStlFile(const char* filename,
 }
 
 
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile_ASCII(const char* filename,
-                       TNumberContainer& coordsOut,
-                       TNumberContainer& normalsOut,
-                       TIndexContainer& trisOut,
-					   TIndexContainer& solidRangesOut)
+                       TNumberContainer1& coordsOut,
+                       TNumberContainer2& normalsOut,
+                       TIndexContainer1& trisOut,
+					   TIndexContainer2& solidRangesOut)
 {
 	using namespace std;
 	using namespace stl_reader_impl;
 
-	typedef typename TNumberContainer::value_type	number_t;
-	typedef typename TIndexContainer::value_type	index_t;
+	typedef typename TNumberContainer1::value_type	number_t;
+	typedef typename TIndexContainer1::value_type	index_t;
 
 	coordsOut.clear();
 	normalsOut.clear();
@@ -629,18 +634,19 @@ bool ReadStlFile_ASCII(const char* filename,
 }
 
 
-template <class TNumberContainer, class TIndexContainer>
+template <class TNumberContainer1, class TNumberContainer2,
+		  class TIndexContainer1, class TIndexContainer2>
 bool ReadStlFile_BINARY(const char* filename,
-                        TNumberContainer& coordsOut,
-                        TNumberContainer& normalsOut,
-                        TIndexContainer& trisOut,
-					    TIndexContainer& solidRangesOut)
+                        TNumberContainer1& coordsOut,
+                        TNumberContainer2& normalsOut,
+                        TIndexContainer1& trisOut,
+					    TIndexContainer2& solidRangesOut)
 {
 	using namespace std;
 	using namespace stl_reader_impl;
 
-	typedef typename TNumberContainer::value_type	number_t;
-	typedef typename TIndexContainer::value_type	index_t;
+	typedef typename TNumberContainer1::value_type	number_t;
+	typedef typename TIndexContainer1::value_type	index_t;
 
 	coordsOut.clear();
 	normalsOut.clear();
