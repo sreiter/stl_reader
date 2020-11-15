@@ -706,11 +706,11 @@ inline bool StlFileHasASCIIFormat(const char* filename)
 	ifstream in(filename);
 	STL_READER_COND_THROW(!in, "Couldnt open file " << filename);
 
-	string firstWord;
-	in >> firstWord;
-	transform(firstWord.begin(), firstWord.end(), firstWord.begin(), ::tolower);
-
-	return firstWord.compare("solid") == 0;
+	char chars [256];
+  in.read (chars, 256);
+  string buffer (chars, in.gcount());
+  return buffer.find ("solid") != string::npos &&
+         buffer.find ("facet") != string::npos;
 }
 
 } // end of namespace stl_reader
