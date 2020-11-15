@@ -709,8 +709,11 @@ inline bool StlFileHasASCIIFormat(const char* filename)
   char chars [256];
   in.read (chars, 256);
   string buffer (chars, in.gcount());
+  transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
   return buffer.find ("solid") != string::npos &&
-         buffer.find ("facet") != string::npos;
+         buffer.find ("\n") != string::npos &&
+         buffer.find ("facet") != string::npos &&
+         buffer.find ("normal") != string::npos;
 }
 
 } // end of namespace stl_reader
