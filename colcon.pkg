@@ -1,0 +1,3 @@
+{
+  "cmake-args": ["-DCOLCON_BUILD=ON"]
+}
