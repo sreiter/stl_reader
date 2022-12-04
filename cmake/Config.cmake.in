@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/stl_readerTargets.cmake")
+check_required_components(stl_reader)
+
