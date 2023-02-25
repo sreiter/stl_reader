@@ -448,6 +448,7 @@ namespace stl_reader_impl {
   template <class TNumberContainer, class TIndexContainer>
   void RemoveDoubles (TNumberContainer& uniqueCoordsOut,
                       TIndexContainer& trisInOut,
+                      TNumberContainer& normalsInOut,
                       std::vector <CoordWithIndex<
                         typename TNumberContainer::value_type,
                         typename TIndexContainer::value_type> >
@@ -498,13 +499,19 @@ namespace stl_reader_impl {
 
       if((ni[0] != ni[1]) && (ni[0] != ni[2]) && (ni[1] != ni[2])){
         for(int j = 0; j < 3; ++j)
+        {
           trisInOut[numUniqueTriInds + j] = ni[j];
+          normalsInOut[numUniqueTriInds + j] = normalsInOut [i + j];
+        }
         numUniqueTriInds += 3;
       }
     }
 
     if(numUniqueTriInds < trisInOut.size())
+    {
       trisInOut.resize (numUniqueTriInds);
+      normalsInOut.resize (numUniqueTriInds);
+    }
   }
 }// end of namespace stl_reader_impl
 
@@ -628,7 +635,7 @@ bool ReadStlFile_ASCII(const char* filename,
 
   solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));
 
-  RemoveDoubles (coordsOut, trisOut, coordsWithIndex);
+  RemoveDoubles (coordsOut, trisOut, normalsOut, coordsWithIndex);
 
   return true;
 }
