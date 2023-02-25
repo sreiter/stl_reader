@@ -473,7 +473,7 @@ namespace stl_reader_impl {
   //  copy unique coordinates to 'uniqueCoordsOut' and create an index-map
   //  'newIndex', which allows to re-index triangles later on.
     index_t curInd = 0;
-    newIndex[0] = 0;
+    newIndex[coordsWithIndexInOut[0].index] = 0;
     for(index_t i = 0; i < 3; ++i)
       uniqueCoordsOut[i] = coordsWithIndexInOut[0][i];
 
