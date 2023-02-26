@@ -718,7 +718,7 @@ bool ReadStlFile_BINARY(const char* filename,
   solidRangesOut.push_back(0);
   solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));
 
-  RemoveDoubles (coordsOut, trisOut, coordsWithIndex);
+  RemoveDoubles (coordsOut, trisOut, normalsOut, solidRangesOut, coordsWithIndex);
 
   return true;
 }
