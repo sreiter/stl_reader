@@ -1,3 +1,4 @@
+# stl_reader &nbsp;&nbsp;&nbsp;&nbsp; [![Build Status](https://app.travis-ci.com/sreiter/stl_reader.svg?branch=master)](https://app.travis-ci.com/github/sreiter/stl_reader)
 
 ## Introduction
 **stl_reader** is a *BSD* licensed single header C++ library providing functions to read **stl geometry files** into user provided containers. It should be easy to integrate **stl_reader** into existing code. It has no external dependencies except for the *standard template library*.
