@@ -3,6 +3,7 @@ project(stl_reader_tests)
 
 add_executable (
     stl_reader_tests
+    read_stl.t.cpp
     remove_doubles.t.cpp
     utils.cpp)
 
@@ -16,3 +17,5 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable (googletest)
 
 target_link_libraries (stl_reader_tests gtest_main)
+add_custom_target (copyMorelResources ALL COMMAND cmake -E copy_directory
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data data)
