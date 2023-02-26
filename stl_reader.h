@@ -501,8 +501,7 @@ namespace stl_reader_impl {
       const index_t triInd = i / 3;
       const index_t newTriInd = numUniqueTriInds / 3;
       if (newSolids.size () < solidsInOut.size () &&
-          solidsInOut [newSolids.size ()] <= triInd &&
-          (newSolids.empty () || newSolids.back () != newTriInd))
+          solidsInOut [newSolids.size ()] <= triInd)
       {
         newSolids.push_back (newTriInd);
       }

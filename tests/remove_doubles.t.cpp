@@ -75,8 +75,9 @@ TEST (removeDoubles, removeOneVertexAndOneTriangleWithThreeSolids)
 {
   vector<size_t> solidRanges {0, 1, 2, 3};
   testRemoveDoubles (solidRanges);
-  EXPECT_EQ (solidRanges.size (), 3);
+  EXPECT_EQ (solidRanges.size (), 4);
   EXPECT_EQ (solidRanges [0], 0);
   EXPECT_EQ (solidRanges [1], 1);
-  EXPECT_EQ (solidRanges [2], 2);
+  EXPECT_EQ (solidRanges [2], 1);
+  EXPECT_EQ (solidRanges [3], 2);
 }
