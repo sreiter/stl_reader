@@ -95,7 +95,7 @@ catch (std::exception& e) {
 ## License
 **stl_reader** is licensed under a *2-clause BSD* license:
 
-    Copyright (c) 2018, Sebastian Reiter (s.b.reiter@gmail.com)
+    Copyright (c) 2018-2023, Sebastian Reiter (s.b.reiter@gmail.com)
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or without

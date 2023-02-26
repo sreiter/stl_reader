@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018, Sebastian Reiter (s.b.reiter@gmail.com)
+ Copyright (c) 2018-2023, Sebastian Reiter (s.b.reiter@gmail.com)
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -445,19 +445,21 @@ namespace stl_reader_impl {
 
   // sorts the array coordsWithIndexInOut and copies unique indices to coordsOut.
   // Triangle-corners are re-indexed on the fly and degenerated triangles are removed.
-  template <class TNumberContainer, class TIndexContainer>
-  void RemoveDoubles (TNumberContainer& uniqueCoordsOut,
-                      TIndexContainer& trisInOut,
-                      TNumberContainer& normalsInOut,
+  template <class TNumberContainer1, class TNumberContainer2,
+            class TIndexContainer1, class TIndexContainer2>
+  void RemoveDoubles (TNumberContainer1& uniqueCoordsOut,
+                      TIndexContainer1& trisInOut,
+                      TNumberContainer2& normalsInOut,
+                      TIndexContainer2& solidsInOut,
                       std::vector <CoordWithIndex<
-                        typename TNumberContainer::value_type,
-                        typename TIndexContainer::value_type> >
+                        typename TNumberContainer1::value_type,
+                        typename TIndexContainer1::value_type> >
                         &coordsWithIndexInOut)
   {
     using namespace std;
 
-    typedef typename TNumberContainer::value_type number_t;
-    typedef typename TIndexContainer::value_type  index_t;
+    typedef typename TNumberContainer1::value_type number_t;
+    typedef typename TIndexContainer1::value_type  index_t;
 
     sort (coordsWithIndexInOut.begin(), coordsWithIndexInOut.end());
   
@@ -470,6 +472,8 @@ namespace stl_reader_impl {
 
     uniqueCoordsOut.resize (numUnique * 3);
     vector<index_t> newIndex (coordsWithIndexInOut.size());
+
+    TIndexContainer2 newSolids;
 
   //  copy unique coordinates to 'uniqueCoordsOut' and create an index-map
   //  'newIndex', which allows to re-index triangles later on.
@@ -493,6 +497,16 @@ namespace stl_reader_impl {
   //  make sure to only add triangles which refer to three different indices
     index_t numUniqueTriInds = 0;
     for(index_t i = 0; i < trisInOut.size(); i+=3){
+      
+      const index_t triInd = i / 3;
+      const index_t newTriInd = numUniqueTriInds / 3;
+      if (newSolids.size () < solidsInOut.size () &&
+          solidsInOut [newSolids.size ()] <= triInd &&
+          (newSolids.empty () || newSolids.back () != newTriInd))
+      {
+        newSolids.push_back (newTriInd);
+      }
+
       int ni[3];
       for(int j = 0; j < 3; ++j)
         ni[j] = newIndex[trisInOut[i+j]];
@@ -512,6 +526,12 @@ namespace stl_reader_impl {
       trisInOut.resize (numUniqueTriInds);
       normalsInOut.resize (numUniqueTriInds);
     }
+
+    const size_t numTris = numUniqueTriInds / 3;
+    if (!newSolids.empty () && newSolids.back () != numTris)
+      newSolids.push_back (numTris);
+    using std::swap;
+    swap (solidsInOut, newSolids);
   }
 }// end of namespace stl_reader_impl
 
@@ -635,7 +655,7 @@ bool ReadStlFile_ASCII(const char* filename,
 
   solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));
 
-  RemoveDoubles (coordsOut, trisOut, normalsOut, coordsWithIndex);
+  RemoveDoubles (coordsOut, trisOut, normalsOut, solidRangesOut, coordsWithIndex);
 
   return true;
 }
