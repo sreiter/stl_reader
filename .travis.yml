@@ -7,4 +7,4 @@ script:
     - cd build
     - cmake ../tests
     - make -j
-    - stl_reader_tests.exe
+    - ./stl_reader_tests
