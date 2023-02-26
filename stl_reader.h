@@ -526,7 +526,9 @@ namespace stl_reader_impl {
       normalsInOut.resize (numUniqueTriInds);
     }
 
-    newSolids.push_back (numUniqueTriInds / 3);
+    if (!newSolids.empty ())
+      newSolids.push_back (numUniqueTriInds / 3);
+    
     using std::swap;
     swap (solidsInOut, newSolids);
   }
