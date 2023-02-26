@@ -506,12 +506,12 @@ namespace stl_reader_impl {
         newSolids.push_back (newTriInd);
       }
 
-      int ni[3];
-      for(int j = 0; j < 3; ++j)
+      index_t ni[3];
+      for(index_t j = 0; j < 3; ++j)
         ni[j] = newIndex[trisInOut[i+j]];
 
       if((ni[0] != ni[1]) && (ni[0] != ni[2]) && (ni[1] != ni[2])){
-        for(int j = 0; j < 3; ++j)
+        for(index_t j = 0; j < 3; ++j)
         {
           trisInOut[numUniqueTriInds + j] = ni[j];
           normalsInOut[numUniqueTriInds + j] = normalsInOut [i + j];
