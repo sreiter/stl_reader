@@ -22,7 +22,6 @@ try {
   for(size_t itri = 0; itri < mesh.num_tris(); ++itri) {
       std::cout << "coordinates of triangle " << itri << ": ";
       for(size_t icorner = 0; icorner < 3; ++icorner) {
-          float* c = mesh.vrt_coords (mesh.tri_corner_ind (itri, icorner));
           const float* c = mesh.tri_corner_coords (itri, icorner);
           // or alternatively:
           // float* c = mesh.vrt_coords (mesh.tri_corner_ind (itri, icorner));
