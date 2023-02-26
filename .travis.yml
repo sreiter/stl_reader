@@ -1,0 +1,10 @@
+language: cpp
+compiler: gcc
+dist: focal
+
+script:
+    - mkdir -p build
+    - cd build
+    - cmake ../tests
+    - make -j
+    - stl_reader_tests.exe
