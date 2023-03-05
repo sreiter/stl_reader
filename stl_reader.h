@@ -188,9 +188,10 @@ namespace stl_reader {
  *
  * \returns true if the file was successfully read into the provided container.
  */
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile(const char* filename,
+bool ReadStlFile(const TChar* filename,
                  TNumberContainer1& coordsOut,
                  TNumberContainer2& normalsOut,
                  TIndexContainer1& trisOut,
@@ -201,9 +202,10 @@ bool ReadStlFile(const char* filename,
 /** \copydetails ReadStlFile
  * \sa ReadStlFile, ReadStlFile_ASCII
  */
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile_ASCII(const char* filename,
+bool ReadStlFile_ASCII(const TChar* filename,
                        TNumberContainer1& coordsOut,
                        TNumberContainer2& normalsOut,
                        TIndexContainer1& trisOut,
@@ -214,9 +216,10 @@ bool ReadStlFile_ASCII(const char* filename,
  * \todo  support systems with big endianess
  * \sa    ReadStlFile, ReadStlFile_BINARY
  */
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile_BINARY(const char* filename,
+bool ReadStlFile_BINARY(const TChar* filename,
                         TNumberContainer1& coordsOut,
                         TNumberContainer2& normalsOut,
                         TIndexContainer1& trisOut,
@@ -227,7 +230,8 @@ bool ReadStlFile_BINARY(const char* filename,
  * with the keyword solid. This should work for many stl files, but may
  * fail, of course.
  */
-inline bool StlFileHasASCIIFormat(const char* filename);
+template<typename TChar>
+inline bool StlFileHasASCIIFormat(const TChar* filename);
 
 
 /// convenience mesh class which makes accessing the stl data more easy
@@ -242,20 +246,27 @@ public:
 
   /// initializes the mesh from the stl-file specified through filename
   /** \{ */
-  StlMesh (const char* filename)
+  template<class TChar>
+  StlMesh (const TChar* filename)
   {
     read_file (filename);
   }
 
   StlMesh (const std::string& filename)
   {
-    read_file (filename);
+    read_file (filename.c_str());
+  }
+
+  StlMesh (const std::wstring& wfilename)
+  {
+    read_file (wfilename.c_str());
   }
   /** \} */
 
   /// fills the mesh with the contents of the specified stl-file
   /** \{ */
-  bool read_file (const char* filename)
+  template<class TChar>
+  bool read_file (const TChar* filename)
   {
     bool res = false;
 
@@ -279,11 +290,6 @@ public:
     }
 
     return res;
-  }
-
-  bool read_file (const std::string& filename)
-  {
-    return read_file (filename.c_str());
   }
   /** \} */
 
@@ -535,9 +541,10 @@ namespace stl_reader_impl {
 }// end of namespace stl_reader_impl
 
 
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile(const char* filename,
+bool ReadStlFile(const TChar* filename,
                  TNumberContainer1& coordsOut,
                  TNumberContainer2& normalsOut,
                  TIndexContainer1& trisOut,
@@ -550,9 +557,10 @@ bool ReadStlFile(const char* filename,
 }
 
 
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile_ASCII(const char* filename,
+bool ReadStlFile_ASCII(const TChar* filename,
                        TNumberContainer1& coordsOut,
                        TNumberContainer2& normalsOut,
                        TIndexContainer1& trisOut,
@@ -660,9 +668,10 @@ bool ReadStlFile_ASCII(const char* filename,
 }
 
 
-template <class TNumberContainer1, class TNumberContainer2,
+template <class TChar,
+          class TNumberContainer1, class TNumberContainer2,
           class TIndexContainer1, class TIndexContainer2>
-bool ReadStlFile_BINARY(const char* filename,
+bool ReadStlFile_BINARY(const TChar* filename,
                         TNumberContainer1& coordsOut,
                         TNumberContainer2& normalsOut,
                         TIndexContainer1& trisOut,
@@ -725,8 +734,8 @@ bool ReadStlFile_BINARY(const char* filename,
   return true;
 }
 
-
-inline bool StlFileHasASCIIFormat(const char* filename)
+template<class TChar>
+inline bool StlFileHasASCIIFormat(const TChar* filename)
 {
   using namespace std;
   ifstream in(filename);
