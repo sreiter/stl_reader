@@ -56,3 +56,8 @@ write_basic_package_version_file(
   VERSION "${version}"
   COMPATIBILITY AnyNewerVersion # probably don't want to set this. Would need to check other options.
 )
+
+if (COLCON_BUILD)
+  find_package(ament_cmake REQUIRED)
+  ament_package()
+endif()
