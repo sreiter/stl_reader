@@ -16,6 +16,7 @@ FetchContent_Declare (
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable (googletest)
 
-target_link_libraries (stl_reader_tests gtest_main)
+target_link_libraries (stl_reader_tests gtest_main stl_reader)
+
 add_custom_target (copyResources ALL COMMAND cmake -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/data data)

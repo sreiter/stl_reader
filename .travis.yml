@@ -5,6 +5,6 @@ dist: focal
 script:
     - mkdir -p build
     - cd build
-    - cmake ../tests
+    - cmake -DSTL_READER_BUILD_TESTS=ON ..
     - make -j
-    - ./stl_reader_tests
+    - ./tests/stl_reader_tests
