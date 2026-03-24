@@ -26,3 +26,12 @@ TEST (readSTL, binarySphere)
   EXPECT_EQ (mesh.solid_tris_begin (0), 0);
   EXPECT_EQ (mesh.solid_tris_end (0), 20);
 }
+
+TEST (readSTL, emptyBinary)
+{
+  stl_reader::StlMesh<> mesh;
+  mesh.read_file ("data/empty_binary.stl");
+
+  EXPECT_EQ (mesh.num_vrts (), 0);
+  EXPECT_EQ (mesh.num_tris (), 0);
+}
