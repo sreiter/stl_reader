@@ -461,6 +461,10 @@ namespace stl_reader_impl {
     typedef typename TNumberContainer1::value_type number_t;
     typedef typename TIndexContainer1::value_type  index_t;
 
+    if (coordsWithIndexInOut.empty()) {
+      return;
+    }
+
     sort (coordsWithIndexInOut.begin(), coordsWithIndexInOut.end());
   
   //  first count unique indices
