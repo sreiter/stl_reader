@@ -1,0 +1,15 @@
+solid so�facet normal -0 0.934172 0.356822
+outer loop
+vertex -0.525731 0.850651 0
+vertex 0 0.525731 0.850651
+vertex 0.525731 0.850651 0
+endloop
+endfacet
+facet normal 0 0.934172 -0.356822
+outer loop
+vertex -0.525731 0.850651 0
+vertex 0.525731 0.850651 0
+vertex 0 0.525731 -0.850651
+endloop
+endfacet
+endsolid solidA

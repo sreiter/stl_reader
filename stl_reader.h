@@ -644,6 +644,10 @@ bool ReadStlFile_ASCII(const char* filename,
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 3));
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 2));
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 1));
+
+        STL_READER_COND_THROW(trisOut.size() != normalsOut.size(),
+          "ERROR while reading from " << filename <<
+          ": a facet was created without a corresponding normal in line " << lineCount);
       }
       else if(tok.compare("solid") == 0){
         solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));

@@ -26,3 +26,9 @@ TEST (readSTL, binarySphere)
   EXPECT_EQ (mesh.solid_tris_begin (0), 0);
   EXPECT_EQ (mesh.solid_tris_end (0), 20);
 }
+
+TEST (readSTL, faceNoNormal)
+{
+  stl_reader::StlMesh<> mesh;
+  EXPECT_THROW (mesh.read_file ("data/face_no_normal.stl"), std::runtime_error);
+}
