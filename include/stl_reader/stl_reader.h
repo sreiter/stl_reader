@@ -575,6 +575,8 @@ bool ReadStlFile_ASCII(const char* filename,
   ifstream in(filename);
   STL_READER_COND_THROW(!in, "Couldn't open file " << filename);
 
+  in.imbue (std::locale ("C"));
+
   vector<CoordWithIndex <number_t, index_t> > coordsWithIndex;
 
   string buffer;
