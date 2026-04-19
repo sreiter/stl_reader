@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../stl_reader.h"
+#include <stl_reader/stl_reader.h>
 
 #include <array>
 #include <iostream>

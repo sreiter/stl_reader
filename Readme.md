@@ -9,6 +9,25 @@ The function operates on template container types. Those containers should have 
 
 A convenience class `StlMesh` is also provided, which makes accessing triangle corners and corresponding corner coordinates much more easy. It still provides raw access to the underlying data arrays.
 
+## CMake integration
+`CMake` is entirely optional and not required to use **stl_reader**. However, starting from **v2.0**, **stl_reader** provides an interface library of the same name, which adds the required include path when being linked against some target. This is especially useful when using `CMake's` `FetchContent` mechanism in your `CMakeLists.txt`, e.g., like this:
+```
+include (FetchContent)
+FetchContent_Declare (
+  stl_reader
+  GIT_REPOSITORY https://github.com/sreiter/stl_reader.git
+  GIT_TAG v2.0
+)
+FetchContent_MakeAvailable (stl_reader)
+#...
+target_link_libraries (YOUR_TARGET stl_reader)
+```
+
+You may then include **stl_reader.h** in your project like this:
+```
+#include <stl_reader/stl_reader.h>
+```
+
 ## Documentation
 Please have a look at the [**stl_reader.h file documentation**](http://sreiter.github.io/stl_reader/stl__reader_8h.html) for a detailed documentation of the provided functions.
 

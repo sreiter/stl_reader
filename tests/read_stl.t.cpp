@@ -1,4 +1,4 @@
-#include "../stl_reader.h"
+#include <stl_reader/stl_reader.h>
 #include <gtest/gtest.h>
 
 TEST (readSTL, asciiSphere)
