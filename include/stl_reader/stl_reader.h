@@ -461,6 +461,9 @@ namespace stl_reader_impl {
     typedef typename TNumberContainer1::value_type number_t;
     typedef typename TIndexContainer1::value_type  index_t;
 
+    if (coordsWithIndexInOut.empty ())
+      return;
+
     sort (coordsWithIndexInOut.begin(), coordsWithIndexInOut.end());
   
   //  first count unique indices
@@ -736,10 +739,8 @@ inline bool StlFileHasASCIIFormat(const char* filename)
   in.read (chars, 256);
   string buffer (chars, in.gcount());
   transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
-  return buffer.find ("solid") != string::npos &&
-         buffer.find ("\n") != string::npos &&
-         buffer.find ("facet") != string::npos &&
-         buffer.find ("normal") != string::npos;
+  return buffer.find ("solid") != string::npos && buffer.find ("\n") != string::npos &&
+         (buffer.find ("facet") != string::npos || buffer.find ("endsolid") != string::npos);
 }
 
 } // end of namespace stl_reader
