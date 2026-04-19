@@ -31,4 +31,4 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build/tests
-      run: stl_reader_tests
+      run: pwd && ls && ./stl_reader_tests
