@@ -1,0 +1,15 @@
+solid missingEndFacet
+outer loop
+facet normal 0 0 1
+vertex -0.5 0.5 0
+vertex -0.5 -0.5 0
+vertex 0.5 -0.5 0
+endloop
+facet normal 0 0 1
+outer loop
+vertex 0.5 -0.5 0
+vertex 0.5 0.5 0
+vertex -0.5 0.5 0
+endloop
+endfacet
+endsolid missingEndFacet
