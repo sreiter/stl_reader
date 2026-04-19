@@ -20,3 +20,4 @@ target_link_libraries (stl_reader_tests gtest_main stl_reader)
 
 add_custom_target (copyResources ALL COMMAND cmake -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/data data)
+add_dependencies (stl_reader_tests copyResources)
