@@ -582,6 +582,7 @@ bool ReadStlFile_ASCII(const char* filename,
   int lineCount = 1;
   int maxNumTokens = 0;
   size_t numFaceVrts = 0;
+  bool readingFacet = false;
 
   while(!(in.eof() || in.fail()))
   {
@@ -605,10 +606,13 @@ bool ReadStlFile_ASCII(const char* filename,
     {
       string& tok = tokens[0];
       if(tok.compare("vertex") == 0){
-        if(tokenCount < 4){
-          STL_READER_THROW("ERROR while reading from " << filename <<
-            ": vertex not specified correctly in line " << lineCount);
-        }
+        STL_READER_COND_THROW(tokenCount < 4,
+          "ERROR while reading from " << filename <<
+          ": vertex not specified correctly in line " << lineCount);
+
+        STL_READER_COND_THROW(!readingFacet,
+          "ERROR while reading from " << filename <<
+          ": attempting to read vertices outside of facet declaration in line " << lineCount);
         
       //  read the position
         CoordWithIndex <number_t, index_t> c;
@@ -626,13 +630,17 @@ bool ReadStlFile_ASCII(const char* filename,
         
         STL_READER_COND_THROW(tokens[1].compare("normal") != 0,
           "ERROR while reading from " << filename <<
-          ": Missing normal specifier in line " << lineCount);
+          ": missing normal specifier in line " << lineCount);
         
+        STL_READER_COND_THROW(readingFacet,
+          "ERROR while reading from " << filename <<
+          ": nested face declarations detected in line " << lineCount);
+        
+        readingFacet = true;
+
       //  read the normal
         for(size_t i = 0; i < 3; ++i)
           normalsOut.push_back (static_cast<number_t> (atof(tokens[i+2].c_str())));
-
-        numFaceVrts = 0;
       }
       else if(tok.compare("outer") == 0){
         STL_READER_COND_THROW ((tokenCount < 2) || (tokens[1].compare("loop") != 0),
@@ -644,9 +652,17 @@ bool ReadStlFile_ASCII(const char* filename,
           "ERROR while reading from " << filename <<
           ": bad number of vertices specified for face in line " << lineCount);
 
+        STL_READER_COND_THROW(readingFacet == false,
+          "ERROR while reading from " << filename <<
+          ": there is no face which could be ended in line " << lineCount);
+
+        readingFacet = false;
+
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 3));
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 2));
         trisOut.push_back(static_cast<index_t> (coordsWithIndex.size() - 1));
+
+        numFaceVrts = 0;
       }
       else if(tok.compare("solid") == 0){
         solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));
@@ -656,6 +672,17 @@ bool ReadStlFile_ASCII(const char* filename,
   }
 
   solidRangesOut.push_back(static_cast<index_t> (trisOut.size() / 3));
+
+  // Entries in `trisOut` correspond to individual corner indices of triangles.
+  // `normalsOut` contains individual coordinates. Three consecutive entries make up one normal.
+  STL_READER_COND_THROW(trisOut.size () != normalsOut.size (),
+                        "ERROR while reading from " << filename <<
+                        ": mismatch between triangle and normal count.");
+  
+  // `coordsWithIndex` contains one entry per vertex.
+  STL_READER_COND_THROW(trisOut.size () != coordsWithIndex.size (),
+                        "ERROR while reading from " << filename <<
+                        ": mismatch between triangle and vertex count.");
 
   RemoveDoubles (coordsOut, trisOut, normalsOut, solidRangesOut, coordsWithIndex);
 
@@ -738,9 +765,10 @@ inline bool StlFileHasASCIIFormat(const char* filename)
   char chars [256];
   in.read (chars, 256);
   string buffer (chars, in.gcount());
-  transform(buffer.begin(), buffer.end(), buffer.begin(), ::tolower);
+  transform (buffer.begin (), buffer.end (), buffer.begin (), ::tolower);
   return buffer.find ("solid") != string::npos && buffer.find ("\n") != string::npos &&
-         (buffer.find ("facet") != string::npos || buffer.find ("endsolid") != string::npos);
+         ((buffer.find ("facet") != string::npos && buffer.find ("normal") != string::npos) ||
+          buffer.find ("endsolid") != string::npos);
 }
 
 } // end of namespace stl_reader

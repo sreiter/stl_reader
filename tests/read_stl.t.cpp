@@ -36,3 +36,15 @@ TEST (readSTL, asciiFileWithoutFaces)
   EXPECT_EQ (mesh.num_tris (), 0);
   EXPECT_EQ (mesh.num_solids (), 1);
 }
+
+TEST (readSTL, asciiFileWithMissingBeginFace)
+{
+  stl_reader::StlMesh<> mesh;
+  EXPECT_THROW (mesh.read_file ("data/missing_begin_face.stl"), std::runtime_error);
+}
+
+TEST (readSTL, asciiFileWithMissingEndFace)
+{
+  stl_reader::StlMesh<> mesh;
+  EXPECT_THROW (mesh.read_file ("data/missing_end_face.stl"), std::runtime_error);
+}
