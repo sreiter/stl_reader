@@ -26,3 +26,13 @@ TEST (readSTL, binarySphere)
   EXPECT_EQ (mesh.solid_tris_begin (0), 0);
   EXPECT_EQ (mesh.solid_tris_end (0), 20);
 }
+
+TEST (readSTL, asciiFileWithoutFaces)
+{
+  stl_reader::StlMesh<> mesh;
+  mesh.read_file ("data/ascii_empty.stl");
+  
+  EXPECT_EQ (mesh.num_vrts (), 0);
+  EXPECT_EQ (mesh.num_tris (), 0);
+  EXPECT_EQ (mesh.num_solids (), 1);
+}
